@@ -33,17 +33,18 @@ pipeline {
             }
         }
 
-        stage('Train Model (GPU + MLflow)') {
-            steps {
-                sh '''
-                docker run --rm --gpus all \
-                  -e MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI \
-                  -v $WORKSPACE:/app \
-                  $IMAGE_NAME
-                '''
-            }
-        }
+stage('Train Model (GPU + MLflow)') {
+    steps {
+        sh '''
+        docker run --rm --gpus all \
+        -e MLFLOW_TRACKING_URI=http://host.docker.internal:5555 \
+        -v $WORKSPACE:/workspace \
+        mlflow-gpu-trainer \
+        python /workspace/train.py
+        '''
     }
+}
+
 
     post {
         success {
