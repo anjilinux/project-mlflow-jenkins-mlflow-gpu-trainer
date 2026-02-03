@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "mlflow-gpu-trainer"
-        MLFLOW_TRACKING_URI = "http://localhost:5555"
+        MLFLOW_TRACKING_URI = "http://host.docker.internal:5555"
     }
 
     stages {
@@ -16,10 +16,8 @@ pipeline {
 
         stage('Build GPU Image') {
             steps {
-                sh "nvidia-smi"
-                sh '''
-                docker build -t $IMAGE_NAME .
-                '''
+                sh 'nvidia-smi'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
@@ -27,24 +25,25 @@ pipeline {
             steps {
                 sh '''
                 nvidia-smi
-                docker run --rm --gpus all nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi
-
+                docker run --rm --gpus all \
+                nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi
                 '''
             }
         }
 
-stage('Train Model (GPU + MLflow)') {
-    steps {
-        sh '''
-        docker run --rm --gpus all \
-        --add-host=host.docker.internal:host-gateway \
-        -e MLFLOW_TRACKING_URI=http://host.docker.internal:5555 \
-        -v $WORKSPACE:/workspace \
-        mlflow-gpu-trainer \
-        python /workspace/train.py
-        '''
+        stage('Train Model (GPU + MLflow)') {
+            steps {
+                sh '''
+                docker run --rm --gpus all \
+                --add-host=host.docker.internal:host-gateway \
+                -e MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI \
+                -v $WORKSPACE:/workspace \
+                $IMAGE_NAME \
+                python /workspace/train.py
+                '''
+            }
+        }
     }
-}
 
     post {
         success {
