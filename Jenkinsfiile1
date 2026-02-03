@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'gpu' }
+    agent { label 'gpu-node' }
 
     environment {
         IMAGE_NAME = "mlflow-gpu-trainer"

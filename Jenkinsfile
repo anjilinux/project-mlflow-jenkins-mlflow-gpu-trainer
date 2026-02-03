@@ -1,0 +1,56 @@
+pipeline {
+    agent { label 'gpu-node' }
+
+    environment {
+        IMAGE_NAME = "mlflow-gpu-trainer"
+        MLFLOW_TRACKING_URI = "http://localhost:5555"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build GPU Image') {
+            steps {
+                sh "nvidia-smi"
+                sh '''
+                docker build -t $IMAGE_NAME .
+                '''
+            }
+        }
+
+        stage('GPU Sanity Check') {
+            steps {
+                sh '''
+                nvidia-smi
+                docker run --rm --gpus all nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi
+
+                '''
+            }
+        }
+
+        stage('Train Model (GPU + MLflow)') {
+            steps {
+                sh '''
+                docker run --rm --gpus all \
+                  -e MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI \
+                  -v $WORKSPACE:/app \
+                  $IMAGE_NAME
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "🚀 Training completed and logged to MLflow"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+    }
+}
