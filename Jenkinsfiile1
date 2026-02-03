@@ -37,6 +37,7 @@ stage('Train Model (GPU + MLflow)') {
     steps {
         sh '''
         docker run --rm --gpus all \
+        --add-host=host.docker.internal:host-gateway \
         -e MLFLOW_TRACKING_URI=http://host.docker.internal:5555 \
         -v $WORKSPACE:/workspace \
         mlflow-gpu-trainer \
@@ -44,7 +45,6 @@ stage('Train Model (GPU + MLflow)') {
         '''
     }
 }
-
 
     post {
         success {
