@@ -1,0 +1,206 @@
+Started by user anjireddy-jenkins
+
+Obtained Jenkinsfile from git https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Still waiting to schedule task
+‘gpu-node
+’ is offline
+Running on gpu-node
+ in /var/lib/jenkins/workspace/docker-gpu
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+Fetching changes from the remote Git repository
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/docker-gpu/.git # timeout=10
+Checking out Revision cb9000f6cc7c8b66a9f75feafb386c17abc069ce (refs/remotes/origin/master)
+ > git config remote.origin.url https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git # timeout=10
+Fetching upstream changes from https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f cb9000f6cc7c8b66a9f75feafb386c17abc069ce # timeout=10
+Commit message: "doc"
+ > git rev-list --no-walk cb9000f6cc7c8b66a9f75feafb386c17abc069ce # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+No credentials specified
+Fetching changes from the remote Git repository
+ > git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/docker-gpu/.git # timeout=10
+ > git config remote.origin.url https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git # timeout=10
+Fetching upstream changes from https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.43.0'
+ > git fetch --tags --force --progress -- https://github.com/anjilinux/project-mlflow-jenkins-mlflow-gpu-trainer.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+Checking out Revision cb9000f6cc7c8b66a9f75feafb386c17abc069ce (refs/remotes/origin/master)
+Commit message: "doc"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build GPU Image)
+[Pipeline] sh
++ nvidia-smi
+Wed Feb  4 15:37:45 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce GTX 1650 Ti     On  |   00000000:01:00.0 Off |                  N/A |
+| N/A   51C    P8              1W /   50W |       6MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|    0   N/A  N/A            2343      G   /usr/lib/xorg/Xorg                        4MiB |
++-----------------------------------------------------------------------------------------+
+[Pipeline] sh
+ > git rev-parse refs/remotes/origin/master^{commit} # timeout=10
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f cb9000f6cc7c8b66a9f75feafb386c17abc069ce # timeout=10
++ docker build -t mlflow-gpu-trainer .
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 778B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/nvidia/cuda:13.1.1-cudnn-runtime-ubuntu24.04
+#2 DONE 2.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/8] FROM docker.io/nvidia/cuda:13.1.1-cudnn-runtime-ubuntu24.04@sha256:bcc2ddb358d2a64ee3379b184ea3bc46a0926f1b1ec63df136ba61cd4d85f30d
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 65B done
+#5 DONE 0.0s
+
+#6 [2/8] WORKDIR /app
+#6 CACHED
+
+#7 [6/8] COPY requirements.txt .
+#7 CACHED
+
+#8 [4/8] RUN python3 -m venv /opt/venv
+#8 CACHED
+
+#9 [7/8] RUN pip install --no-cache-dir -r requirements.txt
+#9 CACHED
+
+#10 [5/8] RUN pip install --upgrade pip setuptools wheel
+#10 CACHED
+
+#11 [3/8] RUN apt-get update && apt-get install -y     python3     python3-venv     python3-pip     git     curl     && rm -rf /var/lib/apt/lists/*
+#11 CACHED
+
+#12 [8/8] COPY train.py .
+#12 CACHED
+
+#13 exporting to image
+#13 exporting layers done
+#13 writing image sha256:c852ef908689bba7ff902c2526d51a13a32d665f8ed82aa73fbe8c02f4b24eba done
+#13 naming to docker.io/library/mlflow-gpu-trainer done
+#13 DONE 0.0s
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (GPU Sanity Check)
+[Pipeline] sh
++ docker run --rm --gpus all nvidia/cuda:13.1.1-base-ubuntu24.04 nvidia-smi
+Wed Feb  4 10:07:48 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce GTX 1650 Ti     On  |   00000000:01:00.0 Off |                  N/A |
+| N/A   51C    P8              1W /   50W |       6MiB /   4096MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Check MLflow Server)
+[Pipeline] sh
++ curl -f http://localhost:5555
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+100   701  100   701    0     0  47454      0 --:--:-- --:--:-- --:--:-- 50071
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no"/><link rel="shortcut icon" href="./static-files/favicon.ico"/><meta name="theme-color" content="#000000"/><link rel="manifest" href="./static-files/manifest.json" crossorigin="use-credentials"/><title>MLflow</title><script defer="defer" src="static-files/static/js/main.7ffba301.js"></script><link href="static-files/static/css/main.280d6c90.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root" class="mlflow-ui-container"></div><div id="modal" class="mlflow-ui-container"></div></body></html>
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Train Model)
+[Pipeline] sh
++ docker run --rm --gpus all --network host -e MLFLOW_TRACKING_URI=http://localhost:5555 -v /var/lib/jenkins/workspace/docker-gpu:/workspace mlflow-gpu-trainer python -u /workspace/train.py
+
+==========
+== CUDA ==
+==========
+
+CUDA Version 13.1.1
+
+Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+Epoch 0 | Loss 0.989707887172699
+Epoch 1 | Loss 1.496256947517395
+Epoch 2 | Loss 1.2461161613464355
+Epoch 3 | Loss 0.9245969653129578
+Epoch 4 | Loss 1.7381649017333984
+2026/02/04 10:07:56 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+2026/02/04 10:07:57 WARNING mlflow.pytorch: Saving pytorch model by Pickle or CloudPickle format requires exercising caution because these formats rely on Python's object serialization mechanism, which can execute arbitrary code during deserialization.The recommended safe alternative is to set 'export_model' to True to save the pytorch model using the safe graph model format.
+🏃 View run indecisive-colt-748 at: http://localhost:5555/#/experiments/72/runs/a36219c71c904084b81a400a3ae6b834
+🧪 View experiment at: http://localhost:5555/#/experiments/72
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
